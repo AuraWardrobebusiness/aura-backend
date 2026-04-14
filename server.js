@@ -33,7 +33,7 @@ app.post("/send-otp", async (req, res) => {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        from: "Aura Wardrobe <onboarding@resend.dev>",
+        from: "Aura Wardrobe <orders@aurawardrobe.in>",
         to: email,
         subject: "Your OTP for Order Verification",
         html: `
@@ -87,4 +87,3 @@ app.post("/verify-otp", (req, res) => {
 /* ---------------- START SERVER ---------------- */
 
 app.listen(5000, () => console.log("Server running"));
-    
