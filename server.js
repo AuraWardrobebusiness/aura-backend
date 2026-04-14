@@ -10,11 +10,17 @@ app.use(cors());
 /* ---------------- EMAIL SETUP ---------------- */
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.EMAIL,
     pass: process.env.APP_PASSWORD
-  }
+  },
+  tls: {
+    rejectUnauthorized: false
+  },
+  connectionTimeout: 10000
 });
 
 /* ---------------- OTP STORAGE ---------------- */
@@ -35,27 +41,33 @@ app.post("/send-otp", async (req, res) => {
     expires: Date.now() + 5 * 60 * 1000 // 5 min
   };
 
-  try {
-    await transporter.sendMail({
-      from: `"Aura Wardrobe" <${process.env.EMAIL}>`,
-      to: email,
-      subject: "Your OTP for Order Verification",
-      html: `
-        <div style="font-family:Arial;padding:20px">
-          <h2>Verify Your Order</h2>
-          <p>Your OTP is:</p>
-          <h1 style="letter-spacing:3px;">${otp}</h1>
-          <p>This OTP is valid for 5 minutes.</p>
-        </div>
-      `
-    });
+ try {
 
+  transporter.sendMail({
+    from: `"Aura Wardrobe" <${process.env.EMAIL}>`,
+    to: email,
+    subject: "Your OTP for Order Verification",
+    html: `
+      <div style="font-family:Arial;padding:20px">
+        <h2>Verify Your Order</h2>
+        <p>Your OTP is:</p>
+        <h1 style="letter-spacing:3px;">${otp}</h1>
+        <p>This OTP is valid for 5 minutes.</p>
+      </div>
+    `
+  })
+  .then(() => {
     res.json({ success: true });
-
-  } catch (err) {
-    console.log(err);
+  })
+  .catch((err) => {
+    console.error("Mail failed:", err.message);
     res.json({ success: false });
-  }
+  });
+
+} catch (err) {
+  console.error("OTP Mail Error:", err.message);
+  res.json({ success: false });
+}
 });
 
 /* ---------------- VERIFY OTP ---------------- */
